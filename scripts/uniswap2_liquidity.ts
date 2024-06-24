@@ -1,13 +1,15 @@
 import axios from 'axios'
 import { ethers } from 'ethers'
 import fs from 'fs'
-import { RPC, networkMap } from '../config'
+import { RPC, networkMap, scanUrl } from '../config'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 // Variables
 const ADAPTER = 'uniswap2_liquidity'
-const NETWORK = 'base'
-const SCAN_KEY = 'SWY52HBFE7RB3JSY26Q3616947I4AIX5CA'
-const SCAN_URL = `https://api.basescan.org/api?module=contract&action=getcontractcreation&apikey=${SCAN_KEY}`
+const NETWORK = 'eth'
+const SCAN_KEY = process.env.ETH
 
 // Types
 type ProtocolInfo = {
@@ -91,7 +93,7 @@ async function main() {
     const protocol = factories[key]
     console.log('calling Scan for: ', protocol.factoryAddress)
     const call = await axios.get(
-      SCAN_URL + `&contractaddresses=${protocol.factoryAddress}`
+      `${scanUrl[NETWORK]}/api?module=contract&action=getcontractcreation&apikey=${SCAN_KEY}&contractaddresses=${protocol.factoryAddress}`
     )
 
     if (!call.data.result) continue

@@ -10,6 +10,12 @@ export const networkMap = {
   base: 'base',
 }
 
+// scanner url
+export const scanUrl = {
+  eth: 'https://api.etherscan.io',
+  base: 'https://api.basescan.org',
+}
+
 // const RPC_ARBITRUM = 'https://arbitrum.meowrpc.com'
 // const RPC_AVALANCHE = 'https://avalanche.drpc.org'
 // const RPC_BASE =
