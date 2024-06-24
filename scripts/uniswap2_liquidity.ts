@@ -8,8 +8,8 @@ dotenv.config()
 
 // Variables
 const ADAPTER = 'uniswap2_liquidity'
-const NETWORK = 'eth'
-const SCAN_KEY = process.env.ETH
+const NETWORK = 'arb'
+const SCAN_KEY = process.env.ARB
 
 // Types
 type ProtocolInfo = {
@@ -100,9 +100,11 @@ async function main() {
     if (!call.data.result[0]) continue
 
     const txHash = call.data.result[0].txHash
+    console.log('hash: ', txHash)
 
     try {
       const tx = await provider.getTransaction(txHash)
+      console.log('tx: ', tx)
       factories[key].startBlock = tx?.blockNumber ?? 0
     } catch (e) {
       console.log('error fetching transaction')
