@@ -7,7 +7,6 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // Variables
-const ADAPTER = 'uniswap2_liquidity'
 const NETWORK = 'arb'
 const SCAN_KEY = process.env.ARB
 
@@ -54,7 +53,10 @@ async function main() {
     const protocols = JSON.parse(content)
 
     for (const protocol of protocols) {
-      if (protocol.adapterId === ADAPTER && protocol.chain === NETWORK) {
+      if (
+        protocol.adapterId === 'uniswap2_liquidity' &&
+        protocol.chain === NETWORK
+      ) {
         uniswap2.push(protocol)
       }
     }
