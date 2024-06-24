@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "generate-uniswap2": "bun ./scripts/uniswap2.ts"
+    "uniswap2_liquidity": "bun ./scripts/uniswap2_liquidity.ts"
   },
   "devDependencies": {
     "bun-types": "latest"
