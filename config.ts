@@ -2,11 +2,11 @@
 export const RPC = {
   eth: 'https://eth-archive.rpc.l0vd.com/WqmTWeEwnjTjxByuwHJI6NYb',
   base: 'https://wider-dimensional-waterfall.base-mainnet.quiknode.pro/db429331102c11009ada09fbe0cb4ee69a797548/',
-  arb: 'https://arbitrum-one.g.allthatnode.com/archive/evm',
+  arb: 'https://arbitrum-archive.rpc.l0vd.com/cMaydpNCD6qFEnpx860y7MrrJsvgZYaP',
   op: 'https://optimism-mainnet-archive.rpc.l0vd.com/tuqlaKMJP3IvI3kTZ6caWMcK',
   bsc: 'https://bsc-mainnet-archive.rpc.l0vd.com',
   matic: 'https://polygon.rpc.l0vd.com/sWa9wzawTaDH1uu7YlQMY09m',
-  avax: 'https://avalanche.drpc.org',
+  avax: 'https://avalanche-archive.rpc.l0vd.com/iwGAa6si958U0AcMnvdziPyuiOaGs2gk',
 }
 
 // Network map from debank to subgraph manifest (yaml)

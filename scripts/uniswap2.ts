@@ -7,14 +7,16 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // Variables
-const NETWORK = 'arb'
-const SCAN_KEY = process.env.ARB
+const NETWORK = 'base'
+const SCAN_KEY = process.env.BASE
+const ADAPTER = 'solidly_liquidity'
 
 // Types
 type ProtocolInfo = {
   factoryAddress: string
   startBlock: number
   network: string
+  module: string
 }
 
 type FactoryProtocol = {
@@ -26,6 +28,16 @@ const provider = new ethers.JsonRpcProvider(RPC[NETWORK])
 
 // Function to generate YAML content and write to a file
 function generateYamlFile(data: ProtocolInfo, protocol: string) {
+  // Create directories if they don't exist
+  if (!fs.existsSync(`dist/${ADAPTER}`)) {
+    fs.mkdirSync(`dist/${ADAPTER}`)
+  }
+
+  if (!fs.existsSync(`dist/${ADAPTER}/${networkMap[NETWORK]}`)) {
+    fs.mkdirSync(`dist/${ADAPTER}/${networkMap[NETWORK]}`)
+  }
+
+  // Create files
   const yamlContent = `
     config:
       - &network ${networkMap[NETWORK]}
@@ -33,7 +45,11 @@ function generateYamlFile(data: ProtocolInfo, protocol: string) {
       - &startBlock ${data.startBlock}
       `
 
-  const filename = `dist/${networkMap[NETWORK]}/${protocol}.yaml`
+  const filename = `dist/${ADAPTER}/${
+    networkMap[NETWORK]
+  }/${protocol}.${data.module
+    .toLowerCase()
+    .replace(/\s+/g, '_')}.${ADAPTER}.yaml`
 
   fs.writeFileSync(filename, yamlContent, 'utf8')
   console.log(`Generated ${filename}`)
@@ -53,10 +69,7 @@ async function main() {
     const protocols = JSON.parse(content)
 
     for (const protocol of protocols) {
-      if (
-        protocol.adapterId === 'uniswap2_liquidity' &&
-        protocol.chain === NETWORK
-      ) {
+      if (protocol.adapterId === ADAPTER && protocol.chain === NETWORK) {
         uniswap2.push(protocol)
       }
     }
@@ -74,7 +87,10 @@ async function main() {
 
     const contract = new ethers.Contract(
       pool.controller as string,
-      ['function factory() external view returns (address)'],
+      [
+        'function factory() external view returns (address)',
+        'function factoryAddress() external view returns (address)',
+      ],
       provider
     )
 
@@ -84,9 +100,22 @@ async function main() {
         factoryAddress: res,
         startBlock: 0,
         network: NETWORK,
+        module: pool.name,
       }
     } catch (e) {
-      console.log("it didn't work")
+      try {
+        const res = await contract.factoryAddress()
+        factories[protocolId] = {
+          factoryAddress: res,
+          startBlock: 0,
+          network: NETWORK,
+          module: pool.name,
+        }
+      } catch (e) {
+        console.log(
+          `${protocolId}: Factory not found for pool ${pool.controller}`
+        )
+      }
     }
   }
 
@@ -102,11 +131,9 @@ async function main() {
     if (!call.data.result[0]) continue
 
     const txHash = call.data.result[0].txHash
-    console.log('hash: ', txHash)
 
     try {
       const tx = await provider.getTransaction(txHash)
-      console.log('tx: ', tx)
       factories[key].startBlock = tx?.blockNumber ?? 0
     } catch (e) {
       console.log('error fetching transaction')
