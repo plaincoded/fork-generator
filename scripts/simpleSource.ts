@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 import fs from 'fs'
 import { RPC, networkMap, scanUrl } from '../config'
 import dotenv from 'dotenv'
+import { ProtocolInfo } from '../types'
 
 dotenv.config()
 
@@ -10,14 +11,6 @@ dotenv.config()
 const NETWORK = 'eth'
 const SCAN_KEY = process.env.ETH
 const ADAPTER = 'compound_lending2'
-
-// Types
-type ProtocolInfo = {
-  sourceAddress: string
-  startBlock: number
-  network: string
-  module: string
-}
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])

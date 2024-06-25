@@ -3,6 +3,7 @@ import { ethers } from 'ethers'
 import fs from 'fs'
 import { RPC, networkMap, scanUrl } from '../config'
 import dotenv from 'dotenv'
+import { ProtocolInfo, FactoryProtocol } from '../types'
 
 dotenv.config()
 
@@ -10,18 +11,6 @@ dotenv.config()
 const NETWORK = 'base'
 const SCAN_KEY = process.env.BASE
 const ADAPTER = 'solidly_liquidity'
-
-// Types
-type ProtocolInfo = {
-  factoryAddress: string
-  startBlock: number
-  network: string
-  module: string
-}
-
-type FactoryProtocol = {
-  [key: string]: ProtocolInfo
-}
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])
@@ -41,7 +30,7 @@ function generateYamlFile(data: ProtocolInfo, protocol: string) {
   const yamlContent = `
     config:
       - &network ${networkMap[NETWORK]}
-      - &factoryAddress '${data.factoryAddress}'
+      - &sourceAddress '${data.sourceAddress}'
       - &startBlock ${data.startBlock}
       `
 
@@ -97,7 +86,7 @@ async function main() {
     try {
       const res = await contract.factory()
       factories[protocolId] = {
-        factoryAddress: res,
+        sourceAddress: res,
         startBlock: 0,
         network: NETWORK,
         module: pool.name,
@@ -106,7 +95,7 @@ async function main() {
       try {
         const res = await contract.factoryAddress()
         factories[protocolId] = {
-          factoryAddress: res,
+          sourceAddress: res,
           startBlock: 0,
           network: NETWORK,
           module: pool.name,
@@ -122,9 +111,9 @@ async function main() {
   // Add start block to results using scan
   for (const key of Object.keys(factories)) {
     const protocol = factories[key]
-    console.log('calling Scan for: ', protocol.factoryAddress)
+    console.log('calling Scan for: ', protocol.sourceAddress)
     const call = await axios.get(
-      `${scanUrl[NETWORK]}/api?module=contract&action=getcontractcreation&apikey=${SCAN_KEY}&contractaddresses=${protocol.factoryAddress}`
+      `${scanUrl[NETWORK]}/api?module=contract&action=getcontractcreation&apikey=${SCAN_KEY}&contractaddresses=${protocol.sourceAddress}`
     )
 
     if (!call.data.result) continue
