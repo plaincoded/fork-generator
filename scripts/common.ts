@@ -24,7 +24,7 @@ export function getPoolsByAdapter(
 
     for (const pool of contents) {
       // If it's not of our interest, continue loop and do nothing
-      if (pool.adapterId !== adapter && pool.chain !== network) continue;
+      if (pool.adapterId !== adapter || pool.chain !== network) continue;
       if (!byProtocol[pool.protocolId]) byProtocol[pool.protocolId] = [];
       byProtocol[pool.protocolId].push(pool as PoolByAdapter);
     }
