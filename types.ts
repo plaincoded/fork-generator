@@ -1,4 +1,5 @@
 export type ProtocolInfo = {
+  name: string
   sourceAddress: string
   startBlock: number
   network: string

@@ -1,6 +1,8 @@
+const yaml = require('js-yaml')
 import axios from 'axios'
 import { ethers } from 'ethers'
 import fs from 'fs'
+import path from 'path'
 import { RPC, networkMap, scanUrl } from '../config'
 import dotenv from 'dotenv'
 import { ProtocolInfo, FactoryProtocol } from '../types'
@@ -8,40 +10,85 @@ import { ProtocolInfo, FactoryProtocol } from '../types'
 dotenv.config()
 
 // Variables
-const NETWORK = 'base'
-const SCAN_KEY = process.env.BASE
-const ADAPTER = 'solidly_liquidity'
+const NETWORK = 'eth'
+const SCAN_KEY = process.env.ETH
+const ADAPTER = 'uniswap2_liquidity'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])
 
+// Get ABI name
+function getAbiName(refPosition: number): string {
+  // Routes to template
+  const templatePath = path.join(__dirname, '../templates', `${ADAPTER}.yaml`)
+
+  // Load YAML files
+  let baseDataSource = yaml.load(fs.readFileSync(templatePath, 'utf8'))
+
+  return baseDataSource.refs[refPosition].source.abi
+}
+
+// Function to generate the output YAML with anchors and references
+function generateYamlContent(
+  abiNameFactory: string,
+  abiNamePair: string,
+  config: ProtocolInfo
+): string {
+  const yamlContent = {
+    dataSources: [
+      {
+        '<<': '*refFactorySource',
+        name: abiNameFactory,
+        network: config.network,
+        source: {
+          address: config.sourceAddress,
+          abi: abiNameFactory,
+          startBlock: config.startBlock,
+        },
+      },
+    ],
+    templates: [
+      {
+        '<<': '*refPairSource',
+        name: abiNamePair,
+        network: config.network,
+      },
+    ],
+  }
+
+  const yamlStr = yaml.dump(yamlContent, { noRefs: true })
+  return yamlStr
+    .replace(/'\<\<': '\*refFactorySource'/g, '<<: *refFactorySource')
+    .replace(/'\<\<': '\*refPairSource'/g, '<<: *refPairSource')
+}
+
 // Function to generate YAML content and write to a file
-function generateYamlFile(data: ProtocolInfo, protocol: string) {
+function generateYamlFile(
+  config: ProtocolInfo,
+  protocol: string,
+  content: string
+) {
   // Create directories if they don't exist
-  if (!fs.existsSync(`dist/${ADAPTER}`)) {
-    fs.mkdirSync(`dist/${ADAPTER}`)
+  if (
+    !fs.existsSync(
+      `dist/${ADAPTER}/${protocol}.${config.module}/${networkMap[NETWORK]}`
+    )
+  ) {
+    fs.mkdirSync(
+      `dist/${ADAPTER}/${protocol}.${config.module}/${networkMap[NETWORK]}`,
+      { recursive: true }
+    )
   }
 
-  if (!fs.existsSync(`dist/${ADAPTER}/${networkMap[NETWORK]}`)) {
-    fs.mkdirSync(`dist/${ADAPTER}/${networkMap[NETWORK]}`)
-  }
+  // Write the output YAML to a file
+  const outputPath = path.join(
+    __dirname,
+    '../',
+    `dist/${ADAPTER}/${protocol}.${config.module}/${networkMap[NETWORK]}/${ADAPTER}.yaml`
+  )
+  fs.writeFileSync(outputPath, content, 'utf8')
 
-  // Create files
-  const yamlContent = `
-    config:
-      - &network ${networkMap[NETWORK]}
-      - &sourceAddress '${data.sourceAddress}'
-      - &startBlock ${data.startBlock}
-      `
-
-  const filename = `dist/${ADAPTER}/${
-    networkMap[NETWORK]
-  }/${protocol}.${data.module
-    .toLowerCase()
-    .replace(/\s+/g, '_')}.${ADAPTER}.yaml`
-
-  fs.writeFileSync(filename, yamlContent, 'utf8')
-  console.log(`Generated ${filename}`)
+  console.log(`YAML file generated at: ${outputPath}`)
 }
 
 // Main function
@@ -50,6 +97,8 @@ async function main() {
   const uniswap2 = []
   const aggregated: any = {}
   const factories: FactoryProtocol = {}
+  const abiNameFactory = getAbiName(0)
+  const abiNamePair = getAbiName(1)
 
   for (const file of files) {
     const content = fs.readFileSync(`data/${file}`, 'utf-8')
@@ -86,19 +135,21 @@ async function main() {
     try {
       const res = await contract.factory()
       factories[protocolId] = {
+        name: abiNameFactory,
         sourceAddress: res,
         startBlock: 0,
-        network: NETWORK,
-        module: pool.name,
+        network: networkMap[NETWORK],
+        module: pool.name.toLowerCase().replace(/\s+/g, '_'),
       }
     } catch (e) {
       try {
         const res = await contract.factoryAddress()
         factories[protocolId] = {
+          name: abiNameFactory,
           sourceAddress: res,
           startBlock: 0,
-          network: NETWORK,
-          module: pool.name,
+          network: networkMap[NETWORK],
+          module: pool.name.toLowerCase().replace(/\s+/g, '_'),
         }
       } catch (e) {
         console.log(
@@ -132,7 +183,15 @@ async function main() {
 
   // Generate YAML files
   for (const key of Object.keys(factories)) {
-    generateYamlFile(factories[key], key)
+    const protocol = key.startsWith(`${NETWORK}_`)
+      ? key.slice(`${NETWORK}_`.length)
+      : key
+    const yamlContent = generateYamlContent(
+      abiNameFactory,
+      abiNamePair,
+      factories[key]
+    )
+    generateYamlFile(factories[key], protocol, yamlContent)
   }
 }
 

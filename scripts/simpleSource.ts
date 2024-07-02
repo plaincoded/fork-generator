@@ -1,3 +1,5 @@
+const yaml = require('js-yaml')
+import path from 'path'
 import axios from 'axios'
 import { ethers } from 'ethers'
 import fs from 'fs'
@@ -10,50 +12,71 @@ dotenv.config()
 // Variables
 const NETWORK = 'eth'
 const SCAN_KEY = process.env.ETH
-const ADAPTER = 'compound_lending2'
+const ADAPTER = 'uniswap2_farming'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])
 
-// Function to generate YAML content and write to a file
-function generateYamlFile(data: ProtocolInfo[], protocol: string) {
+// Get ABI name
+function getAbiName(): string {
+  // Routes to template
+  const templatePath = path.join(__dirname, '../templates', `${ADAPTER}.yaml`)
+
+  // Load YAML files
+  let baseDataSource = yaml.load(fs.readFileSync(templatePath, 'utf8'))
+
+  return baseDataSource.refs[0].source.abi
+}
+
+// Function to generate the output YAML with anchors and references
+function generateYamlContent(abiName: string, configs: ProtocolInfo[]): string {
+  const dataSources = configs.map((config: ProtocolInfo) => {
+    return {
+      '<<': '*refSource',
+      name: config.name,
+      network: config.network,
+      source: {
+        address: config.sourceAddress,
+        abi: abiName,
+        startBlock: config.startBlock,
+      },
+    }
+  })
+
+  const yamlStr = yaml.dump(dataSources, { noRefs: true })
+  return yamlStr.replace(/'\<\<': '\*refSource'/g, '<<: *refSource')
+}
+
+function generateYamlFile(protocol: string, module: string, content: string) {
   // Create directories if they don't exist
-  if (!fs.existsSync(`dist/${ADAPTER}`)) {
-    fs.mkdirSync(`dist/${ADAPTER}`)
+  if (
+    !fs.existsSync(
+      `dist/${ADAPTER}/${protocol}.${module}/${networkMap[NETWORK]}`
+    )
+  ) {
+    fs.mkdirSync(
+      `dist/${ADAPTER}/${protocol}.${module}/${networkMap[NETWORK]}`,
+      { recursive: true }
+    )
   }
 
-  if (!fs.existsSync(`dist/${ADAPTER}/${networkMap[NETWORK]}`)) {
-    fs.mkdirSync(`dist/${ADAPTER}/${networkMap[NETWORK]}`)
-  }
+  // Write the output YAML to a file
+  const outputPath = path.join(
+    __dirname,
+    '../',
+    `dist/${ADAPTER}/${protocol}.${module}/${networkMap[NETWORK]}/${ADAPTER}.yaml`
+  )
+  fs.writeFileSync(outputPath, content, 'utf8')
 
-  // Create files
-  let yamlContent: string = ''
-  for (let i = 0; i < data.length; i++) {
-    yamlContent =
-      yamlContent +
-      `
-      config${i}:
-        - &network ${data[i].network}
-        - &sourceAddress '${data[i].sourceAddress}'
-        - &startBlock ${data[i].startBlock}
-        `
-  }
-
-  const filename = `dist/${ADAPTER}/${
-    networkMap[NETWORK]
-  }/${protocol}.${data[0].module
-    .toLowerCase()
-    .replace(/\s+/g, '_')}.${ADAPTER}.yaml`
-
-  fs.writeFileSync(filename, yamlContent, 'utf8')
-  console.log(`Generated ${filename}`)
+  console.log(`YAML file generated at: ${outputPath}`)
 }
 
 // Main function
 async function main() {
   const files = fs.readdirSync('data')
   const raw = []
-  const aggregated: any = {}
+  const configs: any = {}
+  const abiName = getAbiName()
 
   for (const file of files) {
     const content = fs.readFileSync(`data/${file}`, 'utf-8')
@@ -68,20 +91,23 @@ async function main() {
     }
   }
 
-  for (const protocol of raw) {
-    if (!aggregated[protocol.protocolId]) aggregated[protocol.protocolId] = []
+  for (let i = 0; i < raw.length; i++) {
+    if (!configs[raw[i].protocolId]) {
+      configs[raw[i].protocolId] = []
+    }
 
-    aggregated[protocol.protocolId].push({
-      sourceAddress: protocol.controller,
+    configs[raw[i].protocolId].push({
+      name: abiName + configs[raw[i].protocolId].length,
+      sourceAddress: raw[i].controller,
       startBlock: 0,
-      network: NETWORK,
-      module: protocol.name,
+      network: networkMap[NETWORK],
+      module: raw[i].name.toLowerCase().replace(/\s+/g, '_'),
     })
   }
 
   // Add start block to results using scan
-  for (const key of Object.keys(aggregated)) {
-    const protocols = aggregated[key]
+  for (const key of Object.keys(configs)) {
+    const protocols = configs[key]
     for (const protocol of protocols) {
       console.log('calling Scan for: ', protocol.sourceAddress)
 
@@ -102,11 +128,15 @@ async function main() {
       }
     }
   }
-  console.log(aggregated)
+  console.log(configs)
 
   // Generate YAML files
-  for (const key of Object.keys(aggregated)) {
-    generateYamlFile(aggregated[key], key)
+  for (const key of Object.keys(configs)) {
+    const protocol = key.startsWith(`${NETWORK}_`)
+      ? key.slice(`${NETWORK}_`.length)
+      : key
+    const yamlContent = generateYamlContent(abiName, configs[key])
+    generateYamlFile(protocol, configs[key][0].module, yamlContent)
   }
 }
 

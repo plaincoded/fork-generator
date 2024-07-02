@@ -119,6 +119,9 @@ out
 
 .nuxt
 dist
+dist (deprecated)
+dist (deprecated2)
+dist (deprecated3)
 
 # Gatsby files
 
