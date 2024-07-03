@@ -5,7 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import { RPC, networkMap, scanUrl } from '../config'
 import dotenv from 'dotenv'
-import { ProtocolInfo, FactoryProtocol } from '../types'
+import { ProtocolInfo, Configs } from '../types'
 
 dotenv.config()
 
@@ -96,7 +96,7 @@ async function main() {
   const files = fs.readdirSync('data')
   const uniswap2 = []
   const aggregated: any = {}
-  const factories: FactoryProtocol = {}
+  const factories: Configs = {}
   const abiNameFactory = getAbiName(0)
   const abiNamePair = getAbiName(1)
 

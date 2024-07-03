@@ -6,6 +6,6 @@ export type ProtocolInfo = {
   module: string
 }
 
-export type FactoryProtocol = {
+export type Configs = {
   [key: string]: ProtocolInfo
 }
