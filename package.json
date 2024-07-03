@@ -5,6 +5,7 @@
   "scripts": {
     "uniswap2": "bun ./scripts/uniswap2.ts",
     "compound2": "bun ./scripts/compound2.ts",
+    "ichiVault": "bun ./scripts/ichiVault.ts",
     "simpleSource": "bun ./scripts/simpleSource.ts",
     "renameFilesAddSuffix": "bun ./scripts/utils/renameFilesAddSuffix.ts",
     "renameFilesRemoveSuffix": "bun ./scripts/utils/renameFilesRemoveSuffix.ts"
