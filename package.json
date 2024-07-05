@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "uniswap2": "bun ./scripts/uniswap2.ts",
+    "uniswap3": "bun ./scripts/uniswap3.ts",
     "compound2": "bun ./scripts/compound2.ts",
     "ichiVault": "bun ./scripts/ichiVault.ts",
     "synapseLiquidity": "bun ./scripts/synapseLiquidity.ts",
