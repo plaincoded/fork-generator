@@ -1,0 +1,12 @@
+dataSources:
+  - <<: *refFactorySource
+    name: Factory
+    network: optimism
+    source:
+      address: '0x5eF0153590D4a762F129dCf3c59186D91365e4e1'
+      abi: Factory
+      startBlock: 9334320
+templates:
+  - <<: *refPairSource
+    name: Pair
+    network: optimism

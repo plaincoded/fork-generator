@@ -14,8 +14,8 @@ import {
 dotenv.config()
 
 // Variables
-const NETWORK = 'eth'
-const SCAN_KEY = process.env.ETH
+const NETWORK = 'bsc'
+const SCAN_KEY = process.env.BSC
 const ADAPTER = 'uniswap2_liquidity'
 
 // Provider

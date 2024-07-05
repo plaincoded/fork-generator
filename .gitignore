@@ -118,7 +118,6 @@ out
 # Nuxt.js build / generate output
 
 .nuxt
-dist
 dist (deprecated)
 dist (deprecated2)
 dist (deprecated3)

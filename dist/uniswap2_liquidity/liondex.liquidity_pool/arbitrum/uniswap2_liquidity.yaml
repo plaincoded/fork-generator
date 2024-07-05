@@ -1,0 +1,12 @@
+dataSources:
+  - <<: *refFactorySource
+    name: Factory
+    network: arbitrum
+    source:
+      address: '0xdc2E9f3c3b4E87Ac36B024C2828A39dde817A6eF'
+      abi: Factory
+      startBlock: 93876683
+templates:
+  - <<: *refPairSource
+    name: Pair
+    network: arbitrum

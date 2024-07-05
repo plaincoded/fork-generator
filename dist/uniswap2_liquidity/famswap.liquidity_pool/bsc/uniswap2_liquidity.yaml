@@ -1,0 +1,12 @@
+dataSources:
+  - <<: *refFactorySource
+    name: Factory
+    network: bsc
+    source:
+      address: '0xa236F603902030D87A7E9B09c27A6608619D3d14'
+      abi: Factory
+      startBlock: 17907275
+templates:
+  - <<: *refPairSource
+    name: Pair
+    network: bsc
