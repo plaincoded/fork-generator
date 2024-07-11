@@ -1,6 +1,6 @@
 const yaml = require('js-yaml')
 import { ethers } from 'ethers'
-import { RPC, networkMap, scanUrl } from '../config'
+import { RPC, networkMap, scanKeys, scanUrl } from '../config'
 import dotenv from 'dotenv'
 import { ProtocolInfo } from '../types'
 import {
@@ -9,14 +9,22 @@ import {
   getPoolsByAdapter,
   getTxHash,
   getBlockNumber,
+  fetchAbi,
+  isProxy,
 } from './common'
+import { formatEventWithInputs } from './utils/events'
+import { wait } from './utils/wait'
 
 dotenv.config()
 
 // Variables
-const NETWORK = 'bsc'
-const SCAN_KEY = process.env.BSC
-const ADAPTER = 'curve_locked'
+// const NETWORK = 'bsc'
+// const SCAN_KEY = process.env.BSC
+// const ADAPTER = 'curve_locked'
+const NETWORK = 'arb'
+const SCAN_KEY = scanKeys[NETWORK]
+const ADAPTER = 'token_parse_staked_adapter'
+const EXPECTED_EVENT = 'Staked(indexed address,uint256)'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])
@@ -63,6 +71,50 @@ async function main() {
       )
 
       const blockNumber = await getBlockNumber(txHash, provider)
+      const abi = await fetchAbi(protocols[protocolId][i].controller, NETWORK)
+      const events = abi.filter((x: any) => x.type === 'event')
+      const eventsList = events.map((x: any) =>
+        formatEventWithInputs(x.name, x.inputs)
+      )
+
+      const proxy = isProxy(eventsList)
+
+      if (proxy) {
+        const storage = await provider.getStorage(
+          protocols[protocolId][i].controller,
+          '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc'
+        )
+        const implementation =
+          '0x' + storage.slice(storage.length - 40, storage.length)
+
+        console.log('Implementation:', implementation)
+        console.log('Proxy:', protocols[protocolId][i].controller)
+
+        const implementationAbi = await fetchAbi(implementation, NETWORK)
+        const implementationEvents = implementationAbi.filter(
+          (x: any) => x.type === 'event'
+        )
+        const implementationEventsList = implementationEvents.map((x: any) =>
+          formatEventWithInputs(x.name, x.inputs)
+        )
+
+        console.log(implementationEventsList)
+
+        await wait(2000)
+        continue
+      }
+
+      console.log('Implementation:', protocols[protocolId][i].controller)
+      console.log(eventsList)
+
+      // if (
+      //   !events.some(
+      //     (x: any) => formatEventWithInputs(x.name, x.inputs) === EXPECTED_EVENT
+      //   )
+      // ) {
+
+      //   continue;
+      // }
 
       configs[protocolId].push({
         name: abiName + configs[protocolId].length,
