@@ -1,0 +1,12 @@
+dataSources:
+  - <<: *refFactorySource
+    name: VaultFactory
+    network: optimism
+    source:
+      address: '0x3c91a9D79B56EB806828cc4282744CF39D136713'
+      abi: VaultFactory
+      startBlock: 102661838
+templates:
+  - <<: *refVaultSource
+    name: Vault
+    network: optimism

@@ -14,9 +14,9 @@ import {
 dotenv.config()
 
 // Variables
-const NETWORK = 'eth'
-const SCAN_KEY = process.env.ETH
-const ADAPTER = 'compound_lending'
+const NETWORK = 'bsc'
+const SCAN_KEY = process.env.BSC
+const ADAPTER = 'compound_lending_proxy'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])

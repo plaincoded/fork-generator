@@ -1,0 +1,8 @@
+dataSources:
+  - <<: *refSource
+    name: TokenizedVaultYield0
+    network: arbitrum
+    source:
+      address: '0x087e8c29d0743120a9b9d003f702fb7f450291ba'
+      abi: TokenizedVaultYield
+      startBlock: 175956199

@@ -1,0 +1,15 @@
+dataSources:
+  - <<: *refFactorySource
+    name: Factory
+    network: mainnet
+    source:
+      address: '0xB9a14EE1cd3417f3AcC988F61650895151abde24'
+      abi: Factory
+      startBlock: 18240112
+  - <<: *refPositionManagerSource
+    name: PositionManager
+    network: mainnet
+    source:
+      address: '0xd74c1d4659D6CeF276CcB3792e69945E5C07fedB'
+      abi: PositionManager
+      startBlock: 18240121

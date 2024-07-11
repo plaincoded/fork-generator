@@ -1,0 +1,12 @@
+dataSources:
+  - <<: *refComptrollerSource
+    name: Comptroller
+    network: arbitrum
+    source:
+      address: '0xa86dd95c210dd186fa7639f93e4177e97d057576'
+      abi: Comptroller
+      startBlock: 111012802
+templates:
+  - <<: *refCTokenSource
+    name: CToken
+    network: arbitrum

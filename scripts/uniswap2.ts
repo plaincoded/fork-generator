@@ -14,9 +14,9 @@ import {
 dotenv.config()
 
 // Variables
-const NETWORK = 'bsc'
-const SCAN_KEY = process.env.BSC
-const ADAPTER = 'uniswap2_liquidity'
+const NETWORK = 'eth'
+const SCAN_KEY = process.env.ETH
+const ADAPTER = 'solidly_liquidity'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])

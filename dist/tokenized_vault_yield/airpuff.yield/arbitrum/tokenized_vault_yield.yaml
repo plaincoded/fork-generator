@@ -1,0 +1,120 @@
+dataSources:
+  - <<: *refSource
+    name: TokenizedVaultYield0
+    network: arbitrum
+    source:
+      address: '0x97801654d2048e639043c77b16bc906541b3490a'
+      abi: TokenizedVaultYield
+      startBlock: 184973099
+  - <<: *refSource
+    name: TokenizedVaultYield1
+    network: arbitrum
+    source:
+      address: '0x521a8ca3baf3d7677ddcc091ed91d969d4afcff8'
+      abi: TokenizedVaultYield
+      startBlock: 184973189
+  - <<: *refSource
+    name: TokenizedVaultYield2
+    network: arbitrum
+    source:
+      address: '0x529f94bcd37896b6a38452497c62b2f0a8217517'
+      abi: TokenizedVaultYield
+      startBlock: 184973278
+  - <<: *refSource
+    name: TokenizedVaultYield3
+    network: arbitrum
+    source:
+      address: '0xeb0b9b5ffb763dd69440565f63c67f9695b7c3da'
+      abi: TokenizedVaultYield
+      startBlock: 184973403
+  - <<: *refSource
+    name: TokenizedVaultYield4
+    network: arbitrum
+    source:
+      address: '0xd3e1bde4b4163c86b9b7668de8ae7618720dca93'
+      abi: TokenizedVaultYield
+      startBlock: 184973008
+  - <<: *refSource
+    name: TokenizedVaultYield5
+    network: arbitrum
+    source:
+      address: '0xa2e4cab1f6f9f1163bce937517f1935bec4a0a7c'
+      abi: TokenizedVaultYield
+      startBlock: 184973506
+  - <<: *refSource
+    name: TokenizedVaultYield6
+    network: arbitrum
+    source:
+      address: '0x15a692f5986e9b3cd0af02d0f5c78a37cb120843'
+      abi: TokenizedVaultYield
+      startBlock: 183514567
+  - <<: *refSource
+    name: TokenizedVaultYield7
+    network: arbitrum
+    source:
+      address: '0xab11fd7ac6c4c9c7fca27ccba07603883e7940ca'
+      abi: TokenizedVaultYield
+      startBlock: 183514476
+  - <<: *refSource
+    name: TokenizedVaultYield8
+    network: arbitrum
+    source:
+      address: '0x2fb264008d607da9955d67c2d03e6c36fe67d7c2'
+      abi: TokenizedVaultYield
+      startBlock: 184628915
+  - <<: *refSource
+    name: TokenizedVaultYield9
+    network: arbitrum
+    source:
+      address: '0x1ff0e1d50fdb5afb5ae59ee61ce3a64368ecf48d'
+      abi: TokenizedVaultYield
+      startBlock: 182192036
+  - <<: *refSource
+    name: TokenizedVaultYield10
+    network: arbitrum
+    source:
+      address: '0xcb1c2820c171317cb8cc6ac98e10d2ad36a25b17'
+      abi: TokenizedVaultYield
+      startBlock: 182191942
+  - <<: *refSource
+    name: TokenizedVaultYield11
+    network: arbitrum
+    source:
+      address: '0x71d92e68fe8a767d4b0caf56343db95274af477a'
+      abi: TokenizedVaultYield
+      startBlock: 182194882
+  - <<: *refSource
+    name: TokenizedVaultYield12
+    network: arbitrum
+    source:
+      address: '0x8c6d1500148c214341f2db6e16f557561ca0601d'
+      abi: TokenizedVaultYield
+      startBlock: 186960131
+  - <<: *refSource
+    name: TokenizedVaultYield13
+    network: arbitrum
+    source:
+      address: '0x1f49b171454f206b330e59ed1528ed997ca10816'
+      abi: TokenizedVaultYield
+      startBlock: 184628805
+  - <<: *refSource
+    name: TokenizedVaultYield14
+    network: arbitrum
+    source:
+      address: '0x9d3ec78acf31d78771407530270b4fb66ce982e2'
+      abi: TokenizedVaultYield
+      startBlock: 186960817
+  - <<: *refSource
+    name: TokenizedVaultYield15
+    network: arbitrum
+    source:
+      address: '0x219be2113d2215aaabb5360e840672f09fa48ac5'
+      abi: TokenizedVaultYield
+      startBlock: 186960533
+  - <<: *refSource
+    name: TokenizedVaultYield16
+    network: arbitrum
+    source:
+      address: '0xdc74439a9375fcd369d46ab3dd65b09d12525275'
+      abi: TokenizedVaultYield
+      startBlock: 184628709

@@ -1,0 +1,12 @@
+dataSources:
+  - <<: *refFactorySource
+    name: VaultFactory
+    network: arbitrum
+    source:
+      address: '0xfBf38920cCbCFF7268Ad714ae5F9Fad6dF607065'
+      abi: VaultFactory
+      startBlock: 102858581
+templates:
+  - <<: *refVaultSource
+    name: Vault
+    network: arbitrum

@@ -1,0 +1,29 @@
+dataSources:
+  - <<: *refSource
+    name: Staking0
+    network: arbitrum
+    source:
+      address: '0xff46e1b60dd9de89aa04902d5c3c5ca01f8576a4'
+      abi: Staking
+      startBlock: 199892710
+  - <<: *refSource
+    name: Staking1
+    network: arbitrum
+    source:
+      address: '0xacdc6fc8f84fba26f065489a7bf5837d7cdf546f'
+      abi: Staking
+      startBlock: 186007163
+  - <<: *refSource
+    name: Staking2
+    network: arbitrum
+    source:
+      address: '0x25ef108b328cf752f0e0b0169d499db164173763'
+      abi: Staking
+      startBlock: 171383152
+  - <<: *refSource
+    name: Staking3
+    network: arbitrum
+    source:
+      address: '0x0b619438d1e8b8c205656502de59af2af71c43e0'
+      abi: Staking
+      startBlock: 157464358

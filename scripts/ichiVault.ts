@@ -14,8 +14,8 @@ import {
 dotenv.config()
 
 // Variables
-const NETWORK = 'base'
-const SCAN_KEY = process.env.BASE
+const NETWORK = 'bsc'
+const SCAN_KEY = process.env.BSC
 const ADAPTER = 'ichi_v1_vault_yield'
 
 // Provider

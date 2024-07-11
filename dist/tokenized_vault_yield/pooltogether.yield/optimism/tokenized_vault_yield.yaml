@@ -1,0 +1,99 @@
+dataSources:
+  - <<: *refSource
+    name: TokenizedVaultYield0
+    network: optimism
+    source:
+      address: '0xbe3b918cab6d57a40d1bfb21aeeb5ddf088f4c76'
+      abi: TokenizedVaultYield
+      startBlock: 118900979
+  - <<: *refSource
+    name: TokenizedVaultYield1
+    network: optimism
+    source:
+      address: '0x03d3ce84279cb6f54f5e6074ff0f8319d830dafe'
+      abi: TokenizedVaultYield
+      startBlock: 118900979
+  - <<: *refSource
+    name: TokenizedVaultYield2
+    network: optimism
+    source:
+      address: '0x69ea3f38aaa4db566e0171b6b6e9a206152ad406'
+      abi: TokenizedVaultYield
+      startBlock: 118901173
+  - <<: *refSource
+    name: TokenizedVaultYield3
+    network: optimism
+    source:
+      address: '0x5e37a7f427ef8b3d507acd3bd16db3ffa755bacc'
+      abi: TokenizedVaultYield
+      startBlock: 118901366
+  - <<: *refSource
+    name: TokenizedVaultYield4
+    network: optimism
+    source:
+      address: '0x2998c1685e308661123f64b333767266035f5020'
+      abi: TokenizedVaultYield
+      startBlock: 118901173
+  - <<: *refSource
+    name: TokenizedVaultYield5
+    network: optimism
+    source:
+      address: '0x420caf26f8be24478c454c4130047035ed23d46d'
+      abi: TokenizedVaultYield
+      startBlock: 118901293
+  - <<: *refSource
+    name: TokenizedVaultYield6
+    network: optimism
+    source:
+      address: '0x1f16d3ccf568e96019cedc8a2c79d2ca6257894e'
+      abi: TokenizedVaultYield
+      startBlock: 118901293
+  - <<: *refSource
+    name: TokenizedVaultYield7
+    network: optimism
+    source:
+      address: '0x3e8dbe51da479f7e8ac46307af99ad5b4b5b41dc'
+      abi: TokenizedVaultYield
+      startBlock: 118901366
+  - <<: *refSource
+    name: TokenizedVaultYield8
+    network: optimism
+    source:
+      address: '0x2c30004ec09e731dffcd5783569fb2e09c473732'
+      abi: TokenizedVaultYield
+      startBlock: 118900268
+  - <<: *refSource
+    name: TokenizedVaultYield9
+    network: optimism
+    source:
+      address: '0xa52e38a9147f5ea9e0c5547376c21c9e3f3e5e1f'
+      abi: TokenizedVaultYield
+      startBlock: 118900269
+  - <<: *refSource
+    name: TokenizedVaultYield10
+    network: optimism
+    source:
+      address: '0x9b53ef6f13077727d22cb4acad1119c79a97be17'
+      abi: TokenizedVaultYield
+      startBlock: 119196012
+  - <<: *refSource
+    name: TokenizedVaultYield11
+    network: optimism
+    source:
+      address: '0x182d3050f7261494757638ff3345c7163e5990f3'
+      abi: TokenizedVaultYield
+      startBlock: 118921517
+  - <<: *refSource
+    name: TokenizedVaultYield12
+    network: optimism
+    source:
+      address: '0x3d87b066dcf93661c66cd5158a449483259a3bc1'
+      abi: TokenizedVaultYield
+      startBlock: 118935428
+  - <<: *refSource
+    name: TokenizedVaultYield13
+    network: optimism
+    source:
+      address: '0xe5f8c4e783839e14080daf3e28d64e3140596989'
+      abi: TokenizedVaultYield
+      startBlock: 119152940
