@@ -9,7 +9,7 @@ export function formatEventWithInputs(
   inputs: Array<EventParam>
 ): string {
   return `${event}(${inputs
-    .map((x) => `${x.type} ${x.indexed ? "indexed " : ""}${x.name}`)
+    .map((x) => `${x.indexed ? "indexed " : ""}${x.type} ${x.name}`)
     .join(", ")})`;
 }
 
