@@ -1,0 +1,6 @@
+
+      config:
+        - &network base
+        - &factoryAddress '0x5FA0060FcfEa35B31F7A5f6025F0fF399b98Edf1'
+        - &startBlock 12630117
+  
