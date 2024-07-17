@@ -1,8 +1,0 @@
-dataSources:
-  - <<: *refSource
-    name: VotingEscrow0
-    network: arbitrum
-    source:
-      address: '0x777b2cc540e5e6824a5ceafb04c5a383874a6bf5'
-      abi: VotingEscrow
-      startBlock: 173664220
