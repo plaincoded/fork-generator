@@ -1,6 +1,6 @@
 const yaml = require('js-yaml')
 import { ethers } from 'ethers'
-import { RPC, networkMap, scanKeys, scanUrl } from '../config'
+import { RPC, networkMap, scanUrl } from '../config'
 import dotenv from 'dotenv'
 import { ProtocolInfo } from '../types'
 import {
@@ -9,22 +9,18 @@ import {
   getPoolsByAdapter,
   getTxHash,
   getBlockNumber,
-  fetchAbi,
-  isProxy,
+  getSignatures,
+  filterPoolsBySignature,
+  getFactory,
 } from './common'
-import { formatEventWithInputs } from './utils/events'
-import { wait } from './utils/wait'
 
 dotenv.config()
 
 // Variables
-// const NETWORK = 'bsc'
-// const SCAN_KEY = process.env.BSC
-// const ADAPTER = 'curve_locked'
-const NETWORK = 'arb'
-const SCAN_KEY = scanKeys[NETWORK]
-const ADAPTER = 'token_parse_staked_adapter'
-const EXPECTED_EVENT = 'Staked(indexed address,uint256)'
+const NETWORK = 'eth'
+const SCAN_KEY = process.env.ETH
+const TEMPLATE = 'tokenized_vault_yield'
+const ADAPTER = 'ragetrade_yield'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])
@@ -53,68 +49,47 @@ function generateYamlContent(abiName: string, configs: ProtocolInfo[]): string {
 // Main function
 async function main() {
   const configs: any = {}
-  const abiName = getAbiName(0, ADAPTER)
+  const abiName = getAbiName(0, TEMPLATE)
   const protocols = getPoolsByAdapter(ADAPTER, NETWORK)
 
-  for (const protocolId of Object.keys(protocols)) {
+  // Check if events and function are correct
+  const signatures = getSignatures(TEMPLATE)
+
+  let protocolsFiltered = await filterPoolsBySignature(
+    TEMPLATE,
+    ADAPTER,
+    protocols,
+    signatures,
+    NETWORK,
+    provider
+  )
+  console.log('Event and Function Signatures checked!')
+
+  for (const protocolId of Object.keys(protocolsFiltered)) {
     console.log('Starting protocol ' + protocolId)
 
-    for (let i = 0; i < protocols[protocolId].length; i++) {
-      if (!configs[protocolId]) {
-        configs[protocolId] = []
-      }
-
+    for (let i = 0; i < protocolsFiltered[protocolId].length; i++) {
       const txHash = await getTxHash(
         protocols[protocolId][i].controller,
         scanUrl[NETWORK],
         SCAN_KEY
       )
 
-      const blockNumber = await getBlockNumber(txHash, provider)
-      const abi = await fetchAbi(protocols[protocolId][i].controller, NETWORK)
-      const events = abi.filter((x: any) => x.type === 'event')
-      const eventsList = events.map((x: any) =>
-        formatEventWithInputs(x.name, x.inputs)
-      )
-
-      const proxy = isProxy(eventsList)
-
-      if (proxy) {
-        const storage = await provider.getStorage(
-          protocols[protocolId][i].controller,
-          '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc'
-        )
-        const implementation =
-          '0x' + storage.slice(storage.length - 40, storage.length)
-
-        console.log('Implementation:', implementation)
-        console.log('Proxy:', protocols[protocolId][i].controller)
-
-        const implementationAbi = await fetchAbi(implementation, NETWORK)
-        const implementationEvents = implementationAbi.filter(
-          (x: any) => x.type === 'event'
-        )
-        const implementationEventsList = implementationEvents.map((x: any) =>
-          formatEventWithInputs(x.name, x.inputs)
+      // If created by a Factory, we skip this fork
+      const factory = await getFactory(txHash, provider)
+      if (factory !== null) {
+        console.log(
+          `Protocol ${protocolId} NOT generated, it uses factory: ${factory}`
         )
 
-        console.log(implementationEventsList)
-
-        await wait(2000)
-        continue
+        break
       }
 
-      console.log('Implementation:', protocols[protocolId][i].controller)
-      console.log(eventsList)
+      const blockNumber = await getBlockNumber(txHash, provider)
 
-      // if (
-      //   !events.some(
-      //     (x: any) => formatEventWithInputs(x.name, x.inputs) === EXPECTED_EVENT
-      //   )
-      // ) {
-
-      //   continue;
-      // }
+      if (!configs[protocolId]) {
+        configs[protocolId] = []
+      }
 
       configs[protocolId].push({
         name: abiName + configs[protocolId].length,
@@ -136,6 +111,7 @@ async function main() {
     const yamlContent = generateYamlContent(abiName, configs[key])
     generateYamlFile(
       configs[key][0].module,
+      TEMPLATE,
       ADAPTER,
       networkMap[NETWORK],
       protocol,

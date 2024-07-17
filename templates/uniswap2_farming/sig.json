@@ -1,0 +1,9 @@
+{
+  "events": ["Staked(indexed address user, uint256 amount)"],
+  "functions": [
+    "balanceOf(address account)",
+    "earned(address account)",
+    "stakingToken()",
+    "rewardsToken()"
+  ]
+}

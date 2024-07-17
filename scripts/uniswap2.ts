@@ -9,13 +9,16 @@ import {
   getPoolsByAdapter,
   getTxHash,
   getBlockNumber,
+  getSignatures,
+  filterPoolsBySignature,
 } from './common'
 
 dotenv.config()
 
 // Variables
-const NETWORK = 'eth'
-const SCAN_KEY = process.env.ETH
+const NETWORK = 'arb'
+const SCAN_KEY = process.env.ARB
+const TEMPLATE = 'solidly_liquidity'
 const ADAPTER = 'solidly_liquidity'
 
 // Provider
@@ -58,14 +61,36 @@ function generateYamlContent(
 // Main function
 async function main() {
   const configs: Configs = {}
-  const abiNameFactory = getAbiName(0, ADAPTER)
-  const abiNamePair = getAbiName(1, ADAPTER)
+  const abiNameFactory = getAbiName(0, TEMPLATE)
+  const abiNamePair = getAbiName(1, TEMPLATE)
   const protocols = getPoolsByAdapter(ADAPTER, NETWORK)
 
+  // Filter only the first pool
+  const protocolsOnePool: any = {}
+
+  for (const protocol in protocols) {
+    if (protocols.hasOwnProperty(protocol)) {
+      protocolsOnePool[protocol] = [protocols[protocol][0]]
+    }
+  }
+
+  // Check if events and function are correct
+  const signatures = getSignatures(TEMPLATE)
+
+  let protocolsFiltered = await filterPoolsBySignature(
+    TEMPLATE,
+    ADAPTER,
+    protocolsOnePool,
+    signatures,
+    NETWORK,
+    provider
+  )
+  console.log('Event and Function Signatures checked!')
+
   // Get the Factory address and generate first results
-  for (const protocolId of Object.keys(protocols)) {
+  for (const protocolId of Object.keys(protocolsFiltered)) {
     console.log('Processing protocol ' + protocolId)
-    const pool = protocols[protocolId][0]
+    const pool = protocolsFiltered[protocolId][0]
 
     const contract = new ethers.Contract(
       pool.controller as string,
@@ -115,6 +140,7 @@ async function main() {
 
     generateYamlFile(
       configs[key].module,
+      TEMPLATE,
       ADAPTER,
       networkMap[NETWORK],
       protocol,

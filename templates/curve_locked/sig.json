@@ -1,0 +1,6 @@
+{
+  "events": [
+    "Deposit(indexed address, uint256, indexed uint256, int128, uint256)"
+  ],
+  "functions": ["token()", "locked(address)", "balanceOf(address)"]
+}

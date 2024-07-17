@@ -9,14 +9,17 @@ import {
   getPoolsByAdapter,
   getTxHash,
   getBlockNumber,
+  getSignatures,
+  filterPoolsBySignature,
 } from './common'
 
 dotenv.config()
 
 // Variables
-const NETWORK = 'bsc'
-const SCAN_KEY = process.env.BSC
-const ADAPTER = 'compound_lending_proxy'
+const NETWORK = 'eth'
+const SCAN_KEY = process.env.ETH
+const TEMPLATE = 'compound2'
+const ADAPTER = 'compound_lending'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])
@@ -55,17 +58,56 @@ function generateYamlContent(
     .replace(/'\<\<': '\*refCTokenSource'/g, '<<: *refCTokenSource')
 }
 
+async function getCompoundImplementations(
+  proxyAddresses: string[],
+  provider: ethers.JsonRpcProvider
+): Promise<string[]> {
+  const implementations: string[] = await Promise.all(
+    proxyAddresses.map((proxyAddress) => {
+      const proxyContract = new ethers.Contract(
+        proxyAddress,
+        [
+          'function comptrollerImplementation() external view returns (address)',
+        ],
+        provider
+      )
+
+      return proxyContract.comptrollerImplementation()
+    })
+  )
+
+  return implementations
+}
+
 // Main function
 async function main() {
   const configs: Configs = {}
-  const abiNameComptroller = getAbiName(0, ADAPTER)
-  const abiNameCToken = getAbiName(1, ADAPTER)
+  const abiNameComptroller = getAbiName(0, TEMPLATE)
+  const abiNameCToken = getAbiName(1, TEMPLATE)
 
   const protocols = getPoolsByAdapter(ADAPTER, NETWORK)
 
-  for (const protocolId of Object.keys(protocols)) {
+  // Check if events and function are correct
+  const signatures = getSignatures(TEMPLATE)
+  const implementations = await getCompoundImplementations(
+    Object.values(protocols).map((item) => item[0].controller),
+    provider
+  )
+
+  let protocolsFiltered = await filterPoolsBySignature(
+    TEMPLATE,
+    ADAPTER,
+    protocols,
+    signatures,
+    NETWORK,
+    provider,
+    implementations
+  )
+  console.log('Event and Function Signatures checked!')
+
+  for (const protocolId of Object.keys(protocolsFiltered)) {
     console.log('Processing protocol ' + protocolId)
-    const pool = protocols[protocolId][0]
+    const pool = protocolsFiltered[protocolId][0]
 
     const txHash = await getTxHash(pool.controller, scanUrl[NETWORK], SCAN_KEY)
     const blockNumber = await getBlockNumber(txHash, provider)
@@ -91,6 +133,7 @@ async function main() {
     )
     generateYamlFile(
       configs[key].module,
+      TEMPLATE,
       ADAPTER,
       networkMap[NETWORK],
       protocol,

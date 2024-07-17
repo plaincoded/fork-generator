@@ -1,0 +1,4 @@
+{
+  "events": ["MarketListed(address)"],
+  "functions": ["isComptroller()"]
+}

@@ -3,9 +3,10 @@ import fs from 'fs'
 import { ethers } from 'ethers'
 import axios from 'axios'
 import path from 'path'
-import { ProtocolInfo } from '../types'
+import { Signatures } from '../types'
 import { networkMap, scanKeys, scanUrl } from '../config'
 import { formatEventWithInputs } from './utils/events'
+import { wait } from './utils/wait'
 
 export type PoolByAdapter = {
   chain: string
@@ -40,21 +41,50 @@ export function getPoolsByAdapter(
   return byProtocol
 }
 
-export async function filterPoolsByEvents(
+export async function filterPoolsBySignature(
+  template: string,
+  adapter: string,
   pools: {
     [key: string]: PoolByAdapter[]
   },
-  eventsTarget: string[],
+  signatures: Signatures,
   network: keyof typeof networkMap,
-  provider: ethers.JsonRpcProvider
+  provider: ethers.JsonRpcProvider,
+  implementations: string[] | null = null
 ): Promise<{ [key: string]: PoolByAdapter[] }> {
   let result: { [key: string]: PoolByAdapter[] } = {}
+  let failedProtocols: string[] = []
+  let failedModules: string[] = []
 
   for (const protocol of Object.keys(pools)) {
+    console.log(`Filtering signatures to protocol ${protocol}`)
+
     for (let i = 0; i < pools[protocol].length; i++) {
-      const abi = await fetchAbi(pools[protocol][i].controller, network)
+      let abi: any
+      if (implementations == null) {
+        abi = await fetchAbi(pools[protocol][i].controller, network)
+      } else {
+        abi = await fetchAbi(implementations[i], network)
+      }
+
+      if (!abi) {
+        console.log(`Protocol ${protocol} has contracts NOT verified`)
+
+        if (!failedProtocols.includes(protocol)) {
+          failedProtocols.push(protocol)
+          failedModules.push(pools[protocol][i].name)
+        }
+
+        continue
+      }
+
       const events = abi.filter((item: any) => item.type === 'event')
+      const functions = abi.filter((item: any) => item.type === 'function')
+
       let eventsList = events.map((x: any) =>
+        formatEventWithInputs(x.name, x.inputs)
+      )
+      let functionsList = functions.map((x: any) =>
         formatEventWithInputs(x.name, x.inputs)
       )
 
@@ -65,21 +95,62 @@ export async function filterPoolsByEvents(
         )
 
         const abi = await fetchAbi(implementation, network)
+
+        if (!abi) {
+          console.log(`Protocol ${protocol} has contracts NOT verified`)
+
+          if (!failedProtocols.includes(protocol)) {
+            failedProtocols.push(protocol)
+            failedModules.push(pools[protocol][i].name)
+          }
+
+          continue
+        }
+
         const events = abi.filter((item: any) => item.type === 'event')
+        const functions = abi.filter((item: any) => item.type === 'function')
+
         eventsList = events.map((x: any) =>
+          formatEventWithInputs(x.name, x.inputs)
+        )
+        functionsList = functions.map((x: any) =>
           formatEventWithInputs(x.name, x.inputs)
         )
       }
 
-      if (eventsTarget.every((item) => eventsList.includes(item))) {
-        if (!result[protocol]) {
-          result[protocol] = []
+      if (!signatures.events.every((item) => eventsList.includes(item))) {
+        console.log(`Event signature NOT matching: ${protocol}`)
+
+        if (!failedProtocols.includes(protocol)) {
+          failedProtocols.push(protocol)
+          failedModules.push(pools[protocol][i].name)
         }
 
-        result[protocol].push(pools[protocol][i])
+        continue
       }
+
+      if (!signatures.functions.every((item) => functionsList.includes(item))) {
+        console.log(`Function signature NOT matching: ${protocol}`)
+
+        if (!failedProtocols.includes(protocol)) {
+          failedProtocols.push(protocol)
+          failedModules.push(pools[protocol][i].name)
+        }
+
+        continue
+      }
+
+      if (!result[protocol]) {
+        result[protocol] = []
+      }
+
+      result[protocol].push(pools[protocol][i])
     }
+
+    await wait(1000)
   }
+
+  logFailedProtocols(template, adapter, network, failedProtocols, failedModules)
 
   return result
 }
@@ -124,10 +195,39 @@ export async function getTxHash(
   return call.data.result[0].txHash
 }
 
+export async function getFactory(
+  txHash: string | null,
+  provider: ethers.JsonRpcProvider
+): Promise<string | null> {
+  if (txHash === null) {
+    return null
+  }
+
+  const tx = await provider.getTransaction(txHash)
+
+  if (!tx || tx.to === null) {
+    return null
+  }
+
+  const code = await provider.getCode(tx.to)
+
+  if (code === '0x') {
+    return null
+  }
+
+  return tx.to
+}
+
 // Get ABI name
-export function getAbiName(refPosition: number, adapter: string): string {
+export function getAbiName(refPosition: number, template: string): string {
   // Routes to template
-  const templatePath = path.join(__dirname, '../templates', `${adapter}.yaml`)
+  const templatePath = path.join(
+    __dirname,
+    '..',
+    'templates',
+    template,
+    `${template}.yaml`
+  )
 
   // Load YAML files
   let baseDataSource = yaml.load(fs.readFileSync(templatePath, 'utf8'))
@@ -138,23 +238,31 @@ export function getAbiName(refPosition: number, adapter: string): string {
 // Function to generate YAML content and write to a file
 export function generateYamlFile(
   module: string,
+  template: string,
   adapter: string,
   network: string,
   protocol: string,
   content: string
 ) {
   // Create directories if they don't exist
-  if (!fs.existsSync(`dist/${adapter}/${protocol}.${module}/${network}`)) {
-    fs.mkdirSync(`dist/${adapter}/${protocol}.${module}/${network}`, {
-      recursive: true,
-    })
+  if (
+    !fs.existsSync(
+      `dist/${template}/${adapter}/${protocol}.${module}/${network}`
+    )
+  ) {
+    fs.mkdirSync(
+      `dist/${template}/${adapter}/${protocol}.${module}/${network}`,
+      {
+        recursive: true,
+      }
+    )
   }
 
   // Write the output YAML to a file
   const outputPath = path.join(
     __dirname,
     '../',
-    `dist/${adapter}/${protocol}.${module}/${network}/${adapter}.yaml`
+    `dist/${template}/${adapter}/${protocol}.${module}/${network}/${template}.yaml`
   )
   fs.writeFileSync(outputPath, content, 'utf8')
 
@@ -166,10 +274,53 @@ export async function fetchAbi(
   network: keyof typeof networkMap
 ) {
   const url = `${scanUrl[network]}/api?module=contract&action=getabi&address=${contract}&apikey=${scanKeys[network]}`
-  const result = await axios.get(url)
-  return JSON.parse(result.data.result)
+  try {
+    const result = await axios.get(url)
+    return JSON.parse(result.data.result)
+  } catch (err) {
+    console.log(`Contract ${contract} NOT verified`)
+    return null
+  }
 }
 
 export function isProxy(events: string[]): boolean {
-  return events.includes('Upgraded(indexed address implementation)')
+  return events.includes('Upgraded(indexed address)')
+}
+
+export function getSignatures(template: string): Signatures {
+  const filePath = path.join(__dirname, '..', 'templates', template, 'sig.json')
+  const signaturesJson = fs.readFileSync(filePath, 'utf8')
+  return JSON.parse(signaturesJson)
+}
+
+export function logFailedProtocols(
+  template: string,
+  adapter: string,
+  network: string,
+  protocols: string[],
+  modules: string[]
+) {
+  // Create directories if they don't exist
+  if (!fs.existsSync(`logs/${template}/${adapter}/${network}`)) {
+    fs.mkdirSync(`logs/${template}/${adapter}/${network}`, {
+      recursive: true,
+    })
+  }
+
+  const content = protocols.map((item, index) => {
+    return {
+      template,
+      adapter,
+      network,
+      protocol: item,
+      module: modules[index],
+    }
+  })
+
+  const outputPath = path.join(
+    __dirname,
+    '../',
+    `logs/${template}/${adapter}/${network}/${template}.${adapter}.yaml`
+  )
+  fs.writeFileSync(outputPath, JSON.stringify(content), 'utf8')
 }

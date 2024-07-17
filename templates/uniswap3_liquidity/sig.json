@@ -1,0 +1,12 @@
+{
+  "events": [
+    "IncreaseLiquidity(indexed uint256, uint128, uint256, uint256)",
+    "Transfer(indexed address, indexed address, indexed uint256)"
+  ],
+  "functions": [
+    "positions(uint256)",
+    "factory()",
+    "ownerOf(uint256)",
+    "collect(tuple)"
+  ]
+}

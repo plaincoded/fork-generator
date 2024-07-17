@@ -9,3 +9,8 @@ export type ProtocolInfo = {
 export type Configs = {
   [key: string]: ProtocolInfo
 }
+
+export type Signatures = {
+  events: string[]
+  functions: string[]
+}

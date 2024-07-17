@@ -9,13 +9,16 @@ import {
   getPoolsByAdapter,
   getTxHash,
   getBlockNumber,
+  getSignatures,
+  filterPoolsBySignature,
 } from './common'
 
 dotenv.config()
 
 // Variables
-const NETWORK = 'bsc'
-const SCAN_KEY = process.env.BSC
+const NETWORK = 'eth'
+const SCAN_KEY = process.env.ETH
+const TEMPLATE = 'ichi_v1_vault_yield'
 const ADAPTER = 'ichi_v1_vault_yield'
 
 // Provider
@@ -63,10 +66,32 @@ async function main() {
 
   const protocols = getPoolsByAdapter(ADAPTER, NETWORK)
 
-  for (const protocolId of Object.keys(protocols)) {
+  // Filter only the first pool
+  const protocolsOnePool: any = {}
+
+  for (const protocol in protocols) {
+    if (protocols.hasOwnProperty(protocol)) {
+      protocolsOnePool[protocol] = [protocols[protocol][0]]
+    }
+  }
+
+  // Check if events and function are correct
+  const signatures = getSignatures(TEMPLATE)
+
+  let protocolsFiltered = await filterPoolsBySignature(
+    TEMPLATE,
+    ADAPTER,
+    protocolsOnePool,
+    signatures,
+    NETWORK,
+    provider
+  )
+  console.log('Event and Function Signatures checked!')
+
+  for (const protocolId of Object.keys(protocolsFiltered)) {
     console.log('Processing protocol ' + protocolId)
 
-    const pool = protocols[protocolId][0]
+    const pool = protocolsFiltered[protocolId][0]
 
     const contract = new ethers.Contract(
       pool.controller as string,
@@ -115,6 +140,7 @@ async function main() {
     )
     generateYamlFile(
       configs[key].module,
+      TEMPLATE,
       ADAPTER,
       networkMap[NETWORK],
       protocol,

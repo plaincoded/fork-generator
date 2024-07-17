@@ -1,0 +1,7 @@
+{
+  "events": [
+    "Deposit(indexed address, indexed address, uint256, uint256)",
+    "Transfer(indexed address, indexed address, uint256)"
+  ],
+  "functions": ["balanceOf(address)", "asset()", "convertToAssets(uint256)"]
+}

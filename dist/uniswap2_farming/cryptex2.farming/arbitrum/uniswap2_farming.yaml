@@ -1,8 +1,0 @@
-dataSources:
-  - <<: *refSource
-    name: Staking0
-    network: arbitrum
-    source:
-      address: '0x938f145d5f3abf681618dcc5c71f095b870747ba'
-      abi: Staking
-      startBlock: 108187243

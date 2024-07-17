@@ -9,6 +9,8 @@ import {
   getTxHash,
   getBlockNumber,
   generateYamlFile,
+  getSignatures,
+  filterPoolsBySignature,
 } from './common'
 
 dotenv.config()
@@ -16,6 +18,7 @@ dotenv.config()
 // Variables
 const NETWORK = 'eth'
 const SCAN_KEY = process.env.ETH
+const TEMPLATE = 'synapse_liquidity'
 const ADAPTER = 'synapse_liquidity'
 
 // Provider
@@ -55,24 +58,82 @@ function generateYamlContent(
     .replace(/'\<\<': '\*refPoolSource'/g, '<<: *refPoolSource')
 }
 
+async function getFactory(txHash: string | null): Promise<string> {
+  if (txHash === null) {
+    return ethers.ZeroAddress
+  }
+
+  const receipt = await provider.getTransactionReceipt(txHash)
+
+  if (receipt == null) {
+    return ethers.ZeroAddress
+  }
+
+  const eventSignature = ethers.id('NewSwapPool(address,address,address[])')
+
+  // Iterate through the logs in the receipt
+  for (let log of receipt.logs) {
+    // Check if the log topics match the event signature
+    if (log.topics[0] === eventSignature) {
+      // Return the address of the contract that emitted the event
+      return log.address
+    }
+  }
+
+  return ethers.ZeroAddress
+}
+
 // Main function
 async function main() {
   const configs: Configs = {}
-  const abiNameFactory = getAbiName(0, ADAPTER)
-  const abiNamePool = getAbiName(1, ADAPTER)
+  const abiNameFactory = getAbiName(0, TEMPLATE)
+  const abiNamePool = getAbiName(1, TEMPLATE)
 
   const protocols = getPoolsByAdapter(ADAPTER, NETWORK)
 
-  for (const protocolId of Object.keys(protocols)) {
-    console.log('Processing protocol ' + protocolId)
-    const pool = protocols[protocolId][0]
+  // Filter only the first pool
+  const protocolsOnePool: any = {}
 
-    const txHash = await getTxHash(pool.controller, scanUrl[NETWORK], SCAN_KEY)
-    const blockNumber = await getBlockNumber(txHash, provider)
+  for (const protocol in protocols) {
+    if (protocols.hasOwnProperty(protocol)) {
+      protocolsOnePool[protocol] = [protocols[protocol][0]]
+    }
+  }
+
+  // Check if events and function are correct
+  const signatures = getSignatures(TEMPLATE)
+
+  let protocolsFiltered = await filterPoolsBySignature(
+    TEMPLATE,
+    ADAPTER,
+    protocolsOnePool,
+    signatures,
+    NETWORK,
+    provider
+  )
+  console.log('Event and Function Signatures checked!')
+
+  for (const protocolId of Object.keys(protocolsFiltered)) {
+    console.log('Processing protocol ' + protocolId)
+    const pool = protocolsFiltered[protocolId][0]
+
+    const poolTxHash = await getTxHash(
+      pool.controller,
+      scanUrl[NETWORK],
+      SCAN_KEY
+    )
+    const factoryAddress = await getFactory(poolTxHash)
+
+    const factoryTxHash = await getTxHash(
+      factoryAddress,
+      scanUrl[NETWORK],
+      SCAN_KEY
+    )
+    const blockNumber = await getBlockNumber(factoryTxHash, provider)
 
     configs[protocolId] = {
       name: abiNameFactory,
-      sourceAddress: pool.controller,
+      sourceAddress: factoryAddress,
       startBlock: blockNumber,
       network: networkMap[NETWORK],
       module: pool.name.toLowerCase().replace(/\s+/g, '_'),
@@ -91,6 +152,7 @@ async function main() {
     )
     generateYamlFile(
       configs[key].module,
+      TEMPLATE,
       ADAPTER,
       networkMap[NETWORK],
       protocol,
