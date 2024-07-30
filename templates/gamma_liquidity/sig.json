@@ -1,0 +1,12 @@
+{
+  "events": [
+    "Deposit(indexed address, indexed address, uint256, uint256, uint256)"
+  ],
+  "functions": [
+    "token0()",
+    "token1()",
+    "balanceOf(address)",
+    "totalSupply()",
+    "getTotalAmounts()"
+  ]
+}

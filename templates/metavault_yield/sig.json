@@ -1,0 +1,9 @@
+{
+  "events": ["Transfer(indexed address, indexed address, uint256)"],
+  "functions": [
+    "esToken()",
+    "claimableToken()",
+    "balanceOf(address)",
+    "claimable(address)"
+  ]
+}

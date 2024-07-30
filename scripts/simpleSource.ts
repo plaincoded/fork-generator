@@ -17,10 +17,10 @@ import {
 dotenv.config()
 
 // Variables
-const NETWORK = 'eth'
-const SCAN_KEY = process.env.ETH
-const TEMPLATE = 'tokenized_vault_yield'
-const ADAPTER = 'ragetrade_yield'
+const NETWORK = 'arb'
+const SCAN_KEY = process.env.ARB
+const TEMPLATE = 'metavault_yield'
+const ADAPTER = 'metavault_yield'
 
 // Provider
 const provider = new ethers.JsonRpcProvider(RPC[NETWORK])

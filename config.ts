@@ -17,7 +17,7 @@ export const networkMap = {
   op: 'optimism',
   bsc: 'bsc',
   matic: 'polygon',
-  avax: 'avax',
+  avax: 'avalanche',
 }
 
 // scanner url
@@ -28,7 +28,7 @@ export const scanUrl = {
   op: 'https://api-optimistic.etherscan.io',
   bsc: 'https://api.bscscan.com',
   matic: 'https://api.polygonscan.com',
-  avax: 'avax',
+  avax: 'https://api.routescan.io/v2/network/mainnet/evm/43114/etherscan',
 }
 
 export const scanKeys = {
@@ -38,5 +38,5 @@ export const scanKeys = {
   op: 'VKBTMAUYVUAP3S8SMU8I9BFY894K1YI42H',
   bsc: 'PF43GR93QDJ3F81CU1RWDNQN78Y2QFD37K',
   matic: '83CESRBIWD1RU874BB8QHQCIG4J93K9PHW',
-  avax: 'AVAXSCAN',
+  avax: '',
 }
