@@ -1,0 +1,7 @@
+{
+  "events": [
+    "Supply(indexed address, address, indexed address, uint256, indexed uint16)",
+    "Borrow(indexed address, address, indexed address, uint256, uint8, uint256, indexed uint16)"
+  ],
+  "functions": ["getReserveData(address)", "ADDRESSES_PROVIDER()"]
+}

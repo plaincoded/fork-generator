@@ -130,6 +130,7 @@ export async function filterPoolsBySignature(
       }
 
       if (!signatures.functions.every((item) => functionsList.includes(item))) {
+        console.log('functionsList', functionsList)
         console.log(`Function signature NOT matching: ${protocol}`)
 
         if (!failedProtocols.includes(protocol)) {
